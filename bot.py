@@ -433,7 +433,7 @@ def create_gui():
     # Новый стиль для кнопок
     button_style = {
         "font": ("Helvetica", 12, "bold"),
-        "bg": "#88c0d0",  # Светло-голубой цвет кнопок
+        "bg": "#33c0d0",  # Светло-голубой цвет кнопок
         "fg": "white",
         "activebackground": "#27733b",  # Темно-синий цвет при нажатии
         "activeforeground": "white",
