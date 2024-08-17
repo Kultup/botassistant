@@ -34,8 +34,6 @@ GOOGLE_CSE_CX = "b537f9e6ff4ac45cb"
 
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 
-
-
 # Проверка прав администратора
 def is_admin():
     try:
@@ -210,7 +208,8 @@ def get_main_buttons():
         telebot.types.InlineKeyboardButton("🎵 Завантажити музику (MP3)", callback_data='download_audio')
     )
     markup.add(
-        telebot.types.InlineKeyboardButton("🛑 Зупинити бота", callback_data='stop_bot'),
+        telebot.types.InlineKeyboardButton("🔄 Обновити бота", callback_data='update_bot'),  # Кнопка для обновления
+        telebot.types.InlineKeyboardButton("🛑 Зупинити бота", callback_data='stop_bot')
     )
     return markup
 
@@ -304,7 +303,7 @@ def callback_query_handler(call):
     elif action in ['volume_up_10', 'volume_down_10', 'mute']:
         adjust_volume(call.message, action)
     elif action == 'update_bot':  # Обработка обновления бота
-        handle_update_command(call.message)
+        update_bot()
 
 # Регулювання звуку
 def adjust_volume(message, action):
@@ -491,6 +490,33 @@ def setup_tray():
         pystray.MenuItem("Вихід", stop_bot_tray)
     ))
     icon.run()
+
+# Обновление бота
+def update_bot():
+    try:
+        repo_path = os.path.dirname(os.path.abspath(__file__))
+
+        # Проверка наличия репозитория и обновление
+        if os.path.exists(os.path.join(repo_path, ".git")):
+            repo = git.Repo(repo_path)
+            origin = repo.remotes.origin
+            origin.pull()  # Получение последних изменений
+            logging.info("Обновление бота завершено успешно.")
+        else:
+            bot.send_message(last_chat_id, "❌ Репозиторий не найден.")
+            logging.error("Репозиторий не найден.")
+            return
+
+        bot.send_message(last_chat_id, "✅ Бот был обновлен до последней версии. Перезапуск...")
+        restart_bot()
+
+    except Exception as e:
+        bot.send_message(last_chat_id, f"❌ Ошибка при обновлении бота: {str(e)}")
+        logging.error(f"Ошибка при обновлении бота: {str(e)}")
+
+def restart_bot():
+    python = sys.executable
+    os.execl(python, python, *sys.argv)
 
 # Обробник команди /start
 @bot.message_handler(commands=['start'])
