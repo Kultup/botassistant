@@ -21,6 +21,7 @@ import time  # Импорт модуля time
 # Глобальные переменные
 last_message_id = None
 last_chat_id = None
+icon = None  # Иконка для трея
 
 # Путь до GIF-анимации загрузки
 LOADING_GIF_PATH = "C:\\Users\\dpytlyk-da\\Desktop\\Bot-aas\\loading.gif"
@@ -62,7 +63,12 @@ if not os.path.exists(user_folder):
     os.makedirs(user_folder)
 
 # Логирование
-logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s - %(levelень)s - %(message)s', encoding='utf-8')
+logging.basicConfig(
+    filename=log_file, 
+    level=logging.INFO, 
+    format='%(asctime)s - %(levelname)s - %(message)s', 
+    encoding='utf-8'
+)
 
 # Функция для получения MAC-адреса
 def get_mac_address():
@@ -303,7 +309,8 @@ def callback_query_handler(call):
     elif action in ['volume_up_10', 'volume_down_10', 'mute']:
         adjust_volume(call.message, action)
     elif action == 'update_bot':  # Обработка обновления бота
-        update_bot()
+        bot.send_message(call.message.chat.id, "🔄 Обновление началось...")
+        Thread(target=update_bot, args=(call.message.chat.id,)).start()
 
 # Регулювання звуку
 def adjust_volume(message, action):
@@ -391,8 +398,14 @@ def set_shutdown_timer(message):
 # Зупинка бота
 def stop_bot(message):
     bot.send_message(message.chat.id, "🛑 Зупинка бота")
+    stop_bot_process()
+
+def stop_bot_process():
     bot.stop_polling()
-    sys.exit()  # Завершення процесу
+    if icon:
+        icon.stop()
+    logging.info("Бот зупинений.")
+    sys.exit()
 
 # Моніторинг батареї та сповіщення
 def monitor_system():
@@ -444,14 +457,11 @@ def create_gui():
 
     def stop_bot():
         logging.info("Зупинка бота")
-        bot.stop_polling()
-        root.quit()
-        root.destroy()
-        sys.exit()
+        stop_bot_process()
 
     def check_for_update():
         logging.info("Перевірка наявності оновлення")
-        update_bot()
+        Thread(target=update_bot, args=(last_chat_id,)).start()
 
     # Создание интерфейса с новыми стилями
     title_label = tk.Label(root, text="Telegram Бот Управління", **label_style)
@@ -495,12 +505,11 @@ def start_bot_tray(icon, item):
 
 # Функція для зупинки бота і виходу з програми
 def stop_bot_tray(icon, item):
-    bot.stop_polling()
-    icon.stop()
-    sys.exit()
+    stop_bot_process()
 
 # Функція для створення іконки в системному треї
 def setup_tray():
+    global icon
     icon = pystray.Icon("Telegram Bot", create_image(), "Telegram Бот Управління", menu=pystray.Menu(
         pystray.MenuItem("Запустити бота", start_bot_tray),
         pystray.MenuItem("Зупинити бота", stop_bot_tray),
@@ -509,31 +518,44 @@ def setup_tray():
     icon.run()
 
 # Обновление бота
-def update_bot():
+def update_bot(chat_id):
     try:
-        repo_path = os.path.dirname(os.path.abspath(__file__))
+        # Явный путь к репозиторию
+        repo_path = r"C:\Users\dpytlyk-da\Desktop\Bot_aas"
 
-        # Проверка наличия репозитория и обновление
+        # Отладочный вывод для проверки пути
+        print(f"Путь к репозиторию: {repo_path}")
+        logging.info(f"Путь к репозиторию: {repo_path}")
+
+        # Проверяем, что папка .git существует в данной директории
         if os.path.exists(os.path.join(repo_path, ".git")):
+            print("Папка .git найдена.")
+            logging.info("Папка .git найдена.")
+            
+            # Открываем репозиторий
             repo = git.Repo(repo_path)
             origin = repo.remotes.origin
-            origin.pull()  # Получение последних изменений
+            
+            # Выполняем pull для получения последних изменений
+            origin.pull()
             logging.info("Обновление бота завершено успешно.")
+            bot.send_message(chat_id, "✅ Бот был обновлен до последней версии.")
         else:
-            bot.send_message(last_chat_id, "❌ Репозиторий не найден.")
             logging.error("Репозиторий не найден.")
+            bot.send_message(chat_id, "❌ Репозиторий не найден.")
             return
 
-        bot.send_message(last_chat_id, "✅ Бот был обновлен до последней версии. Перезапуск...")
+        # Перезапуск бота после обновления
         restart_bot()
 
     except Exception as e:
-        bot.send_message(last_chat_id, f"❌ Ошибка при обновлении бота: {str(e)}")
         logging.error(f"Ошибка при обновлении бота: {str(e)}")
+        bot.send_message(chat_id, f"❌ Ошибка при обновлении бота: {str(e)}")
 
 def restart_bot():
     python = sys.executable
     os.execl(python, python, *sys.argv)
+
 
 # Обробник команди /start
 @bot.message_handler(commands=['start'])

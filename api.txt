@@ -1,0 +1,5 @@
+# Конфигурационные значения напрямую в коде
+TELEGRAM_BOT_TOKEN = "7410403471:AAGRMOkcmy3wz4IsRtfSBy7VQoN0QSfVeJM"
+YOUTUBE_API_KEY = "AIzaSyAFazoR1V_RvUIqK2YD7ORqTYsmYReSp6g"
+GOOGLE_CSE_API_KEY = "AIzaSyAFazoR1V_RvUIqK2YD7ORqTYsmYReSp6g"
+GOOGLE_CSE_CX = "b537f9e6ff4ac45cb"
