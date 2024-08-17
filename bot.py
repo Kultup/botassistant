@@ -62,7 +62,7 @@ if not os.path.exists(user_folder):
     os.makedirs(user_folder)
 
 # Логирование
-logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', encoding='utf-8')
+logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s - %(levelень)s - %(message)s', encoding='utf-8')
 
 # Функция для получения MAC-адреса
 def get_mac_address():
@@ -413,17 +413,28 @@ def create_gui():
     root = tk.Tk()
     root.title(f"Управління Telegram ботом")
     root.geometry("300x400")
-    root.configure(bg="#f0f0f0")  # Світло-сірий фон
 
-    # Стиль для кнопок
+    # Измененный фон окна
+    root.configure(bg="#2e3440")  # Темно-серый фон
+
+    # Новый стиль для кнопок
     button_style = {
-        "font": ("Helvetica", 12),
-        "bg": "#007acc",  # Колір кнопок - синій
+        "font": ("Helvetica", 12, "bold"),
+        "bg": "#88c0d0",  # Светло-голубой цвет кнопок
         "fg": "white",
-        "activebackground": "#005fa3",  # Колір при натисканні - темно-синій
+        "activebackground": "#5e81ac",  # Темно-синий цвет при нажатии
+        "activeforeground": "white",
         "relief": tk.RAISED,
-        "bd": 3,
-        "highlightthickness": 0
+        "bd": 4,
+        "highlightthickness": 2,
+        "highlightbackground": "#4c566a",  # Цвет обводки кнопок
+    }
+
+    # Новый стиль для меток
+    label_style = {
+        "font": ("Helvetica", 14, "bold"),
+        "bg": "#2e3440",  # Соответствие фону окна
+        "fg": "#eceff4",  # Светлый текст
     }
 
     def start_bot():
@@ -438,21 +449,27 @@ def create_gui():
         root.destroy()
         sys.exit()
 
-    # Створення інтерфейсу
-    title_label = tk.Label(root, text="Telegram Бот Управління", font=("Helvetica", 14), bg="#f0f0f0", fg="#007acc")
+    def check_for_update():
+        logging.info("Перевірка наявності оновлення")
+        update_bot()
+
+    # Создание интерфейса с новыми стилями
+    title_label = tk.Label(root, text="Telegram Бот Управління", **label_style)
     title_label.pack(pady=10)
 
     tk.Button(root, text="Запустити бота", command=start_bot, **button_style).pack(pady=5)
     tk.Button(root, text="Зупинити бота", command=stop_bot, **button_style).pack(pady=5)
+    tk.Button(root, text="Перевірити оновлення", command=check_for_update, **button_style).pack(pady=5)
 
-    powered_label = tk.Label(root, text="Powered by Kultup", bg="#f0f0f0", fg="#007acc", font=("Helvetica", 10, "italic"))
+    powered_label = tk.Label(root, text="Powered by Kultup", font=("Helvetica", 10, "italic"), bg="#2e3440", fg="#88c0d0")
     powered_label.pack(side=tk.BOTTOM, pady=10)
 
     tk.Button(root, text="Вихід", command=stop_bot, **button_style).pack(pady=5)
 
-    root.protocol("WM_DELETE_WINDOW", stop_bot)  # Обробка закриття вікна через хрестик
+    root.protocol("WM_DELETE_WINDOW", stop_bot)  # Обработка закрытия окна через крестик
 
     root.mainloop()
+
 
 # Функція для створення іконки
 def create_image():
