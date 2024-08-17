@@ -435,7 +435,7 @@ def create_gui():
         "font": ("Helvetica", 12, "bold"),
         "bg": "#88c0d0",  # Светло-голубой цвет кнопок
         "fg": "white",
-        "activebackground": "#5e81ac",  # Темно-синий цвет при нажатии
+        "activebackground": "#27733b",  # Темно-синий цвет при нажатии
         "activeforeground": "white",
         "relief": tk.RAISED,
         "bd": 4,
